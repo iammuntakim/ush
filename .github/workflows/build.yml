@@ -16,7 +16,7 @@ jobs:
       - name: Install Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y upx-ucl binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi
+          sudo apt-get install -y upx-ucl binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi zip
 
       - name: Process
         run: |
@@ -29,9 +29,11 @@ jobs:
             arm-linux-gnueabi-strip --strip-all --remove-section=.comment --remove-section=.note "$f"
             upx --best --ultra-brute "$f" || true
           done
+          zip -r native.jar lib/
 
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Optimize binaries"
+          commit_message: "Optimize binaries and package native.jar"
           branch: main
+          file_pattern: "lib/ native.jar"
