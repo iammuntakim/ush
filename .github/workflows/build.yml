@@ -1,0 +1,34 @@
+name: Build and Optimize
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install UPX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y upx-ucl
+
+      - name: Make Shared Libraries Executable and Compress
+        run: |
+          chmod +x lib/arm64-v8a/*.so lib/armeabi-v7a/*.so
+          
+          for f in lib/arm64-v8a/*.so lib/armeabi-v7a/*.so; do
+              upx --android-shlib --best --ultra-brute "$f"
+          done
+
+      - name: Commit and Push Optimized Libraries
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Optimize .so files with ultimate UPX"
+          branch: ${{ github.head_ref || github.ref_name }}
